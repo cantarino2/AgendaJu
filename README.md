@@ -1,2 +1,2 @@
-# AgendaJu
-Agenda com campo de observação
+# Trabalho Agenda
+Projeto Agenda realizado por Ana Carolina, Geandra e Juliana
