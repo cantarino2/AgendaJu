@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Financeira</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Agenda Financeira</h1>
+        <div class="form-container">
+            <div>
+                <h2>Gastos Fixos</h2>
+                <input type="text" id="gastoFixo" placeholder="Descrição do gasto fixo">
+                <input type="number" id="valorFixo" placeholder="Valor">
+                <button onclick="adicionarGastoFixo()">Adicionar</button>
+                <ul id="listaGastosFixos"></ul>
+            </div>
+            <div>
+                <h2>Gastos Variáveis</h2>
+                <input type="text" id="gastoVariavel" placeholder="Descrição do gasto variável">
+                <input type="number" id="valorVariavel" placeholder="Valor">
+                <button onclick="adicionarGastoVariavel()">Adicionar</button>
+                <ul id="listaGastosVariaveis"></ul>
+            </div>
+            <div>
+                <h2>Anotações Gerais</h2>
+                <textarea id="anotacoesGerais" rows="5" placeholder="Escreva suas anotações aqui..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
