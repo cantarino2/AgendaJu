@@ -5,19 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Finanças Pessoais</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f7fc;
       margin: 0;
       padding: 20px;
       text-align: center;
     }
     .header {
-      background-color: #4CAF50;
+      background-color: #2b2d42;
       padding: 20px;
       color: white;
       font-size: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      border-bottom: 4px solid #8d99ae;
+    }
+    .header .logout-button {
+      cursor: pointer;
+      color: white;
+      font-size: 20px;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .login-container, .finance-container, .profile-container {
+      display: none;
     }
     .balance {
       margin: 20px 0;
@@ -30,162 +51,302 @@
       justify-content: center;
     }
     .chart {
-      width: 70%;
-      background-color: #fff;
-      padding: 15px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      height: 300px; /* Altura fixa para o gráfico */
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     }
     .transactions {
       margin-top: 20px;
       text-align: left;
     }
     .transaction-item {
-      background-color: #fff;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     }
     .buttons {
       margin-top: 20px;
     }
     button {
-      padding: 15px 20px;
+      padding: 12px 20px;
       font-size: 16px;
-      background-color: #4CAF50;
+      background-color: #8d99ae;
       color: white;
       border: none;
       cursor: pointer;
-      border-radius: 5px;
+      border-radius: 10px;
+      transition: background-color 0.3s;
     }
     button:hover {
-      background-color: #45a049;
+      background-color: #2b2d42;
     }
     .input-group {
       margin-top: 20px;
     }
     input, select {
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
       margin-right: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      transition: border-color 0.3s;
+    }
+    input:focus, select:focus {
+      border-color: #8d99ae;
+    }
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      margin: 0 auto;
+    }
+    .profile-container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      margin: 20px auto;
     }
   </style>
 </head>
 <body>
-  <div class="header">Gerenciador de Finanças</div>
-  <div class="balance">Saldo Atual: R$ <span id="balance">0,00</span></div>
-  
-  <div class="charts">
-    <div class="chart">
-      <canvas id="financeChart"></canvas>
+  <div class="header">
+    <span>Gerenciador de Finanças</span>
+    <button class="logout-button" onclick="logout()">Sair</button>
+  </div>
+
+  <!-- Tela de Login -->
+  <div class="login-container" id="login-container">
+    <h2>Login</h2>
+    <form class="login-form">
+      <input type="text" id="login-username" placeholder="Usuário" required><br>
+      <input type="password" id="login-password" placeholder="Senha" required><br>
+      <button type="button" onclick="login()">Entrar</button>
+      <button type="button" onclick="showRegister()">Cadastrar</button>
+    </form>
+  </div>
+
+  <!-- Tela de Cadastro -->
+  <div class="register-container" id="register-container" style="display: none;">
+    <h2>Cadastrar</h2>
+    <form class="login-form">
+      <input type="text" id="register-username" placeholder="Usuário" required><br>
+      <input type="password" id="register-password" placeholder="Senha" required><br>
+      <button type="button" onclick="register()">Cadastrar</button>
+      <button type="button" onclick="showLogin()">Voltar ao Login</button>
+    </form>
+  </div>
+
+  <!-- Tela de Finanças -->
+  <div class="finance-container" id="finance-container">
+    <div class="balance">Saldo Atual: R$ <span id="balance">0,00</span></div>
+
+    <div class="charts">
+      <div class="chart">
+        <canvas id="financeChart"></canvas>
+      </div>
+    </div>
+
+    <div class="transactions" id="transactions"></div>
+
+    <div class="input-group">
+      <input type="date" id="date" placeholder="Data">
+      <input type="text" id="description" placeholder="Descrição">
+      <input type="number" id="amount" placeholder="Valor">
+      <select id="type">
+        <option value="income">Entradas</option>
+        <option value="expense">Saídas</option>
+      </select>
+      <button onclick="addTransaction()">Adicionar</button>
     </div>
   </div>
-  
-  <div class="transactions" id="transactions"></div>
-  
-  <div class="input-group">
-    <input type="date" id="date" placeholder="Data">
-    <input type="text" id="description" placeholder="Descrição">
-    <input type="number" id="amount" placeholder="Valor">
-    <select id="type">
-      <option value="income">Entradas</option>
-      <option value="expense">Saídas</option>
-    </select>
-    <button onclick="addTransaction()">Adicionar</button>
+
+  <!-- Tela de Perfil -->
+  <div class="profile-container" id="profile-container" style="display: none;">
+    <h2>Perfil de Usuário</h2>
+    <p>Usuário atual: <span id="current-username"></span></p>
+    <h3>Trocar Senha</h3>
+    <input type="password" id="new-password" placeholder="Nova senha" required><br>
+    <button onclick="changePassword()">Alterar Senha</button>
   </div>
 
   <script>
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    let currentUser = localStorage.getItem('currentUser') || null;
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+    const loginContainer = document.getElementById('login-container');
+    const registerContainer = document.getElementById('register-container');
+    const financeContainer = document.getElementById('finance-container');
+    const profileContainer = document.getElementById('profile-container');
     const balanceElement = document.getElementById('balance');
     const transactionsElement = document.getElementById('transactions');
     const financeChartElement = document.getElementById('financeChart').getContext('2d');
-
     let financeChart;
 
-    function updateLocalStorage() {
-      localStorage.setItem('transactions', JSON.stringify(transactions));
+    if (currentUser) {
+      showFinance();
+    } else {
+      showLogin();
     }
 
-    function updateUI() {
-      transactionsElement.innerHTML = '';
-      let balance = 0;
-      let incomes = 0;
-      let expenses = 0;
-      
-      transactions.forEach((transaction, index) => {
-        const transactionElement = document.createElement('div');
-        transactionElement.classList.add('transaction-item');
-        transactionElement.innerHTML = `
-          ${transaction.date} - ${transaction.description} - ${transaction.type === 'income' ? 'Entradas' : 'Saídas'} - R$ ${transaction.amount.toFixed(2)} 
-          <button onclick="removeTransaction(${index})">Remover</button>
-        `;
-        transactionsElement.appendChild(transactionElement);
+    function showLogin() {
+      loginContainer.style.display = 'block';
+      registerContainer.style.display = 'none';
+      financeContainer.style.display = 'none';
+      profileContainer.style.display = 'none';
+    }
 
-        if (transaction.type === 'income') {
-          incomes += transaction.amount;
-          balance += transaction.amount;
-        } else {
-          expenses += transaction.amount;
-          balance -= transaction.amount;
-        }
-      });
+    function showRegister() {
+      registerContainer.style.display = 'block';
+      loginContainer.style.display = 'none';
+      financeContainer.style.display = 'none';
+      profileContainer.style.display = 'none';
+    }
 
-      balanceElement.textContent = balance.toFixed(2);
+    function showFinance() {
+      loginContainer.style.display = 'none';
+      registerContainer.style.display = 'none';
+      financeContainer.style.display = 'block';
+      profileContainer.style.display = 'none';
+      updateUI();
+    }
 
-      // Atualizando gráfico
-      updateChart(incomes, expenses);
+    function showProfile() {
+      loginContainer.style.display = 'none';
+      registerContainer.style.display = 'none';
+      financeContainer.style.display = 'none';
+      profileContainer.style.display = 'block';
+      document.getElementById('current-username').textContent = currentUser;
+    }
+
+    function login() {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      const user = users.find(user => user.username === username && user.password === password);
+
+      if (user) {
+        currentUser = username;
+        localStorage.setItem('currentUser', currentUser);
+        showFinance();
+      } else {
+        alert('Usuário ou senha incorretos!');
+      }
+    }
+
+    function register() {
+      const username = document.getElementById('register-username').value;
+      const password = document.getElementById('register-password').value;
+
+      if (users.find(user => user.username === username)) {
+        alert('Usuário já existe!');
+        return;
+      }
+
+      users.push({ username, password });
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('Usuário cadastrado com sucesso!');
+      showLogin();
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem('currentUser');
+      showLogin();
     }
 
     function addTransaction() {
-      const description = document.getElementById('description').value;
-      const amount = parseFloat(document.getElementById('amount').value);
-      const type = document.getElementById('type').value;
       const date = document.getElementById('date').value;
+      const description = document.getElementById('description').value;
+      const amount = document.getElementById('amount').value;
+      const type = document.getElementById('type').value;
 
-      if (description === '' || isNaN(amount) || amount <= 0) return;
+      if (!date || !description || !amount || isNaN(amount)) {
+        alert('Preencha todos os campos corretamente!');
+        return;
+      }
 
-      transactions.push({ description, amount, type, date });
-      updateLocalStorage();
+      const transaction = { date, description, amount: parseFloat(amount), type, user: currentUser };
+      transactions.push(transaction);
+      localStorage.setItem('transactions', JSON.stringify(transactions));
       updateUI();
-
-      document.getElementById('description').value = '';
-      document.getElementById('amount').value = '';
-      document.getElementById('date').value = '';
     }
 
     function removeTransaction(index) {
       transactions.splice(index, 1);
-      updateLocalStorage();
+      localStorage.setItem('transactions', JSON.stringify(transactions));
       updateUI();
     }
 
-    function updateChart(incomes, expenses) {
-      if (financeChart) financeChart.destroy(); // Destruir gráfico anterior
+    function updateUI() {
+      const userTransactions = transactions.filter(transaction => transaction.user === currentUser);
+      const balance = userTransactions.reduce((acc, transaction) => {
+        return transaction.type === 'income' ? acc + transaction.amount : acc - transaction.amount;
+      }, 0);
+      
+      balanceElement.textContent = balance.toFixed(2);
+      
+      transactionsElement.innerHTML = userTransactions.map((transaction, index) => `
+        <div class="transaction-item">
+          <strong>${transaction.description}</strong><br>
+          Data: ${transaction.date}<br>
+          Valor: R$ ${transaction.amount.toFixed(2)} (${transaction.type === 'income' ? 'Entrada' : 'Saída'})
+          <button onclick="removeTransaction(${index})" style="margin-left: 10px; padding: 5px; background-color: #d63031; color: white; border: none; border-radius: 5px;">Remover</button>
+        </div>
+      `).join('');
+
+      updateChart(userTransactions);
+    }
+
+    function updateChart(userTransactions) {
+      const income = userTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+      const expense = userTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+
+      if (financeChart) {
+        financeChart.destroy();
+      }
 
       financeChart = new Chart(financeChartElement, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
           labels: ['Entradas', 'Saídas'],
           datasets: [{
-            label: 'Valor',
-            data: [incomes, expenses],
-            backgroundColor: ['#4CAF50', '#FF6347'],
+            data: [income, expense],
+            backgroundColor: ['#00b894', '#d63031'],
           }]
         },
         options: {
-          scales: {
-            y: { beginAtZero: true }
-          },
           responsive: true,
-          plugins: {
-            legend: { display: false }
-          }
+          maintainAspectRatio: false,
         }
       });
     }
-    // Inicializando a interface
-    updateUI();
+
+    function changePassword() {
+      const newPassword = document.getElementById('new-password').value;
+
+      users = users.map(user => {
+        if (user.username === currentUser) {
+          return { ...user, password: newPassword };
+        }
+        return user;
+      });
+
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('Senha alterada com sucesso!');
+    }
   </script>
 </body>
 </html>
